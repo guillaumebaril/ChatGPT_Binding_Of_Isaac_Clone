@@ -1361,3 +1361,453 @@ I did not used this code. I manually added a isKeyPressed method in the keyboard
 I think I'm getting tired and did not have the patience to ask chatgpt to fix this, i think that's a sign i need to go to sleep :)
 
 enough for today
+
+[PROMPT]
+Create a player class with these properties (if you think of better names for the properties, you can use them) : 
+- Health   (our health points)
+- Speed    (our walking speed)
+- FireRate (the rate at which we fire bullets)
+- Flying   (boolean to know if we are able to flying)
+
+We also need to keep track of various variables to allow smooth movement (velocity, positions, other variables?)
+
+Also IF you think I need more information in the player class, please include them
+
+[CHATGPT]
+Here's a Player class with the properties you mentioned, as well as additional properties and methods to handle smooth movement and updates:
+
+```javascript
+// player.js
+export class Player {
+  constructor(health, speed, fireRate, flying) {
+    this.health = health;
+    this.speed = speed;
+    this.fireRate = fireRate;
+    this.flying = flying;
+
+    // Position
+    this.x = 0;
+    this.y = 0;
+
+    // Velocity
+    this.vx = 0;
+    this.vy = 0;
+
+    // Movement state
+    this.movingLeft = false;
+    this.movingRight = false;
+    this.movingUp = false;
+    this.movingDown = false;
+  }
+
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  update(deltaTime) {
+    this.vx = 0;
+    this.vy = 0;
+
+    if (this.movingLeft) {
+      this.vx = -this.speed;
+    }
+    if (this.movingRight) {
+      this.vx = this.speed;
+    }
+    if (this.movingUp) {
+      this.vy = -this.speed;
+    }
+    if (this.movingDown) {
+      this.vy = this.speed;
+    }
+
+    this.x += this.vx * deltaTime;
+    this.y += this.vy * deltaTime;
+  }
+
+  setMovingLeft(value) {
+    this.movingLeft = value;
+  }
+
+  setMovingRight(value) {
+    this.movingRight = value;
+  }
+
+  setMovingUp(value) {
+    this.movingUp = value;
+  }
+
+  setMovingDown(value) {
+    this.movingDown = value;
+  }
+}
+
+```
+
+The Player class now has properties for health, speed, fire rate, and flying status. It also includes properties for position (x, y) and velocity (vx, vy), as well as movement state properties (movingLeft, movingRight, movingUp, movingDown).
+
+The update() method calculates the player's velocity based on the movement state and updates the player's position using the velocity and deltaTime.
+
+You can use this class to create a player object and update it in your game loop. For example:
+
+```javascript
+// main.js (modified parts)
+
+import { Player } from './player';
+
+const player = new Player(100, 2, 10, false);
+
+// Update player movement based on keyboard input
+keyboard.addKeyPressHandler('KeyW', () => player.setMovingUp(true));
+keyboard.addKeyUpHandler('KeyW', () => player.setMovingUp(false));
+keyboard.addKeyPressHandler('KeyA', () => player.setMovingLeft(true));
+keyboard.addKeyUpHandler('KeyA', () => player.setMovingLeft(false));
+keyboard.addKeyPressHandler('KeyS', () => player.setMovingDown(true));
+keyboard.addKeyUpHandler('KeyS', () => player.setMovingDown(false));
+keyboard.addKeyPressHandler('KeyD', () => player.setMovingRight(true));
+keyboard.addKeyUpHandler('KeyD', () => player.setMovingRight(false));
+
+function gameLoop(timestamp) {
+  const deltaTime = (timestamp - lastFrameTime) / 1000;
+  lastFrameTime = timestamp;
+
+  // Update the player
+  player.update(deltaTime);
+
+  // Rendering code...
+
+  // Request the next frame
+  requestAnimationFrame(gameLoop);
+}
+
+```
+
+This way, the player's movement will be smooth and controlled by the keyboard input.
+
+
+
+
+[PROMPT]
+I will show you my Keyboard class, then you will generate the required code for the player movement.
+
+export class Keyboard {
+    constructor() {
+        this.keys = new Map();
+
+        // Bind the event listeners
+        window.addEventListener('keydown', this.onKeyDown.bind(this));
+        window.addEventListener('keyup', this.onKeyUp.bind(this));
+    }
+
+    onKeyDown(event) {
+        this.keys.set(event.code, true);
+    }
+
+    onKeyUp(event) {
+        this.keys.set(event.code, false);
+    }
+
+    isKeyDown(keyCode) {
+        return this.keys.get(keyCode) || false;
+    }
+
+    isKeyPressed(keyCode) {
+        var pressed = this.keys.get(keyCode) || false;
+        this.keys.set(keyCode, false);
+        return pressed;
+    }
+}
+
+[CHATGPT]
+
+Here's the modified Player class with methods for handling movement based on the Keyboard class:
+
+
+```javascript
+export class Player {
+  constructor(health, speed, fireRate, flying) {
+    this.health = health;
+    this.speed = speed;
+    this.fireRate = fireRate;
+    this.flying = flying;
+
+    // Initialize position and velocity
+    this.position = { x: 0, y: 0 };
+    this.velocity = { x: 0, y: 0 };
+  }
+
+  update(deltaTime, keyboard) {
+    const speed = this.speed * deltaTime;
+
+    // Handle horizontal movement
+    if (keyboard.isKeyDown('ArrowLeft')) {
+      this.velocity.x = -speed;
+    } else if (keyboard.isKeyDown('ArrowRight')) {
+      this.velocity.x = speed;
+    } else {
+      this.velocity.x = 0;
+    }
+
+    // Handle vertical movement
+    if (keyboard.isKeyDown('ArrowUp')) {
+      this.velocity.y = -speed;
+    } else if (keyboard.isKeyDown('ArrowDown')) {
+      this.velocity.y = speed;
+    } else {
+      this.velocity.y = 0;
+    }
+
+    // Update position based on velocity
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+```
+
+This update method takes deltaTime and an instance of the Keyboard class as arguments. It calculates the new position based on the speed and the keys being pressed. You can call this method in your gameLoop function to update the player's position based on the input.
+
+
+```javascript
+// main.js (modified parts)
+
+// ...
+
+const keyboard = new Keyboard();
+const player = new Player(100, 100, 10, false);
+
+function gameLoop(timestamp) {
+  const deltaTime = (timestamp - lastFrameTime) / 1000;
+  lastFrameTime = timestamp;
+
+  player.update(deltaTime, keyboard);
+
+  // ...
+}
+
+```
+
+
+[PROMPT]
+We need to draw the player. Where should we put the player render code? 
+
+[CHATGPT]
+The best place to put the player render code is in a separate module dedicated to rendering the player. This will help maintain a clean separation between the player's logic and its rendering. You can create a new module called PlayerRenderer.js for this purpose.
+
+Here's an example of how the PlayerRenderer.js module might look like:
+
+```javascript
+// PlayerRenderer.js
+
+export class PlayerRenderer {
+  constructor() {
+    // Initialize any required properties or resources for rendering the player
+  }
+
+  draw(ctx, player) {
+    // Draw the player based on its properties (e.g., position, appearance)
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(player.position.x, player.position.y, 32, 32);
+  }
+}
+
+```
+
+Now, you can import the PlayerRenderer class in your main file and use it to draw the player in your gameLoop function.
+
+```javascript
+// main.js (modified parts)
+
+// Import the necessary modules
+import { PlayerRenderer } from './PlayerRenderer.js';
+// ...
+
+// Instantiate the player renderer
+const playerRenderer = new PlayerRenderer();
+
+// Modify the gameLoop function
+function gameLoop(timestamp) {
+  // ...
+
+  // Clear the canvas before drawing
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw the room, minimap, and player
+  roomRenderer.draw(ctx, currentRoom);
+  drawMinimap(ctx, canvas, rooms, currentRoom);
+  playerRenderer.draw(ctx, player);
+
+  // Request the next frame
+  requestAnimationFrame(gameLoop);
+}
+
+```
+This way, you keep the rendering logic separated from the game logic, making your code easier to manage and maintain.
+
+
+[PROMPT]
+This is my createMap function that creates a map. It is currently in the game.js file (main file).
+
+function createMap() {
+    const map = generateRooms();
+    const roomGenerator = new RoomGenerator();
+
+    map.forEach(room => {
+        room.layout = roomGenerator.generateRoom(room, map);
+    });
+
+    return map;
+}
+
+this is my map.js file content : 
+
+import { Room } from "./room.js";
+
+const MIN_ROOMS = 20;
+const MAX_ROOMS = 50;
+const DIRECTIONS = [
+  { x: -1, y: 0 }, // gauche
+  { x: 1, y: 0 }, // droite
+  { x: 0, y: -1 }, // haut
+  { x: 0, y: 1 }, // bas
+];
+
+function getRandomDirection() {
+  return DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+}
+
+function roomExists(rooms, x, y) {
+  return rooms.some(room => room.x === x && room.y === y);
+}
+
+export function generateRooms() {
+  const numRooms = Math.floor(Math.random() * (MAX_ROOMS - MIN_ROOMS + 1)) + MIN_ROOMS;
+  const rooms = [];
+
+  // Créez la première salle
+  const startX = 0;
+  const startY = 0;
+  const firstRoom = new Room(startX, startY);
+  rooms.push(firstRoom);
+
+  // Créez les salles restantes et définissez les salles adjacentes
+  while (rooms.length < numRooms) {
+    const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    const newAdjacentRooms = Math.floor(Math.random() * 3) + 1; // 1 à 4 salles adjacentes
+
+    for (let i = 0; i < newAdjacentRooms && rooms.length < numRooms; i++) {
+      let direction = getRandomDirection();
+      let newX = randomRoom.x + direction.x;
+      let newY = randomRoom.y + direction.y;
+
+      if (!roomExists(rooms, newX, newY)) {
+        const newRoom = new Room(newX, newY);
+        newRoom.addAdjacentRoom(randomRoom);
+        randomRoom.addAdjacentRoom(newRoom);
+        rooms.push(newRoom);
+      }
+    }
+  }
+
+  return rooms;
+}
+
+Can you merge both in the same class? Does it make sense?
+
+[CHATGPT]
+Yes, merging both the createMap function and the generateRooms function into the same class makes sense. This would allow you to encapsulate the map generation logic in a single class, making the code more organized and easier to maintain. You can create a new class called MapGenerator in a new module file, e.g., MapGenerator.js.
+
+Here's how you can merge both functions into the MapGenerator class:
+
+
+```javascript
+// MapGenerator.js
+import { Room } from "./room.js";
+
+const MIN_ROOMS = 20;
+const MAX_ROOMS = 50;
+const DIRECTIONS = [
+  { x: -1, y: 0 }, // gauche
+  { x: 1, y: 0 }, // droite
+  { x: 0, y: -1 }, // haut
+  { x: 0, y: 1 }, // bas
+];
+
+export class MapGenerator {
+  constructor() {}
+
+  getRandomDirection() {
+    return DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+  }
+
+  roomExists(rooms, x, y) {
+    return rooms.some(room => room.x === x && room.y === y);
+  }
+
+  generateRooms() {
+    const numRooms = Math.floor(Math.random() * (MAX_ROOMS - MIN_ROOMS + 1)) + MIN_ROOMS;
+    const rooms = [];
+
+    // Créez la première salle
+    const startX = 0;
+    const startY = 0;
+    const firstRoom = new Room(startX, startY);
+    rooms.push(firstRoom);
+
+    // Créez les salles restantes et définissez les salles adjacentes
+    while (rooms.length < numRooms) {
+      const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+      const newAdjacentRooms = Math.floor(Math.random() * 3) + 1; // 1 à 4 salles adjacentes
+
+      for (let i = 0; i < newAdjacentRooms && rooms.length < numRooms; i++) {
+        let direction = this.getRandomDirection();
+        let newX = randomRoom.x + direction.x;
+        let newY = randomRoom.y + direction.y;
+
+        if (!this.roomExists(rooms, newX, newY)) {
+          const newRoom = new Room(newX, newY);
+          newRoom.addAdjacentRoom(randomRoom);
+          randomRoom.addAdjacentRoom(newRoom);
+          rooms.push(newRoom);
+        }
+      }
+    }
+
+    return rooms;
+  }
+
+  createMap() {
+    const map = this.generateRooms();
+    const roomGenerator = new RoomGenerator();
+
+    map.forEach(room => {
+      room.layout = roomGenerator.generateRoom(room, map);
+    });
+
+    return map;
+  }
+}
+
+```
+
+Now, you can import and use the MapGenerator class in your main file:
+
+```javascript
+// main.js (modified parts)
+
+// Import the necessary modules
+import { MapGenerator } from './MapGenerator.js';
+// ...
+
+// Instantiate the map generator
+const mapGenerator = new MapGenerator();
+
+// Create the map
+const map = mapGenerator.createMap();
+
+```
+
+By doing this, you have successfully encapsulated the map generation logic within the MapGenerator class, making the code more organized and easier to maintain.
+
+
+

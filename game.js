@@ -1,35 +1,28 @@
 import { Room } from "./room.js";
-import { generateRooms } from "./map.js";
+import { MapGenerator } from './MapGenerator.js';
 import { drawMinimap } from "./minimap.js";
-import RoomGenerator from './roomGenerator.js';
 import RoomRenderer from './roomRenderer.js';
 import { updateFPSCounter } from "./fpsCounter.js";
 import { Keyboard } from './keyboard.js';
+import { Player } from './player.js';
+import { PlayerRenderer } from './PlayerRenderer.js';
+
+const player = new Player(100, 60, 10, false);
+const playerRenderer = new PlayerRenderer();
+const mapGenerator = new MapGenerator();
 
 const keyboard = new Keyboard();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-
-function createMap() {
-    const map = generateRooms();
-    const roomGenerator = new RoomGenerator();
-
-    map.forEach(room => {
-        room.layout = roomGenerator.generateRoom(room, map);
-    });
-
-    return map;
-}
-
+const map = mapGenerator.createMap();
 const roomRenderer = new RoomRenderer(ctx);
 
-const map = createMap();
 
 let currentRoom = map[0]; // Replace with the actual current room
 
-function update() {
+function update(deltaTime) {
     // Check for arrow key presses
     const dx = keyboard.isKeyPressed('ArrowRight') - keyboard.isKeyPressed('ArrowLeft');
     const dy = keyboard.isKeyPressed('ArrowDown') - keyboard.isKeyPressed('ArrowUp');
@@ -43,17 +36,28 @@ function update() {
             currentRoom = adjacentRoom;
         }
     }
+
+    // Update the player
+    player.update(deltaTime, keyboard);
 }
 
-function render() {
+let lastFrameTime = performance.now();
+
+function render(timestamp) {
+
+    const deltaTime = (timestamp - lastFrameTime) / 1000;
+    lastFrameTime = timestamp;
+  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Update the game state
-    update();
+    update(deltaTime);
 
     // Render the current room
     roomRenderer.drawRoom(currentRoom);
+
+    playerRenderer.draw(ctx, player);
 
     // Render the minimap
     drawMinimap(ctx, canvas, map, currentRoom);

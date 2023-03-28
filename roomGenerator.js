@@ -1,4 +1,3 @@
-// roomGenerator.js
 export default class RoomGenerator {
     constructor() {
         this.tileSize = 32;
@@ -61,7 +60,6 @@ export default class RoomGenerator {
         }
     }
 
-    // roomGenerator.js (modified part)
     generateRoom(room, map) {
         room.widthInTiles = this.roomWidth;
         room.heightInTiles = this.roomHeight;

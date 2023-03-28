@@ -1,4 +1,3 @@
-// keyboard.js
 export class Keyboard {
     constructor() {
         this.keys = new Map();
