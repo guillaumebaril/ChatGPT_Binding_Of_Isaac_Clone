@@ -20,11 +20,12 @@ export default class RoomGenerator {
 
         return layout;
     }
+    
 
     _addWallsAndDoors(layout, room, map) {
         const centerX = Math.floor(this.roomWidth / 2);
         const centerY = Math.floor(this.roomHeight / 2);
-
+    
         for (let y = 0; y < this.roomHeight; y++) {
             for (let x = 0; x < this.roomWidth; x++) {
                 if (y === 0 || y === this.roomHeight - 1 || x === 0 || x === this.roomWidth - 1) {
@@ -32,17 +33,17 @@ export default class RoomGenerator {
                 }
             }
         }
-
+    
         room.adjacentRooms.forEach(adjacentRoom => {
             const dirX = adjacentRoom.x - room.x;
             const dirY = adjacentRoom.y - room.y;
-
-            if (dirY === -1) layout[0][centerX] = this.tiles.DOOR;
-            if (dirY === 1) layout[this.roomHeight - 1][centerX] = this.tiles.DOOR;
-            if (dirX === -1) layout[centerY][0] = this.tiles.DOOR;
-            if (dirX === 1) layout[centerY][this.roomWidth - 1] = this.tiles.DOOR;
+    
+            if (dirY === -1) layout[0][centerX] = this.tiles.DOOR; // top door
+            if (dirY === 1) layout[this.roomHeight - 1][centerX] = this.tiles.DOOR; // bottom door
+            if (dirX === -1) layout[centerY][0] = this.tiles.DOOR; // left door
+            if (dirX === 1) layout[centerY][this.roomWidth - 1] = this.tiles.DOOR; // right door
         });
-    }
+    }    
 
     _addRandomObstacles(layout, room) {
         const centerX = Math.floor(this.roomWidth / 2);

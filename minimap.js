@@ -5,7 +5,7 @@ const MINIMAP_MARGIN = 4;
 
 export function drawMinimap(ctx, canvas, rooms, currentRoom) {
     ctx.save(); // Save the current context state
-    ctx.globalAlpha = 0.5; // Set the opacity to 50%
+    ctx.globalAlpha = 1; // Set the opacity to 50%
 
     // Calculate the bounding box of the rooms
     let minX = Infinity;
@@ -38,7 +38,7 @@ export function drawMinimap(ctx, canvas, rooms, currentRoom) {
     ctx.fillRect(topRightX, topRightY, MINIMAP_SIZE, MINIMAP_SIZE);
 
     // Draw the rooms on the minimap
-    rooms.forEach(room => {
+    rooms.forEach((room, i) => {
         const x = topRightX + (room.x - minX) * ROOM_SIZE * scaleFactor;
         const y = topRightY + (room.y - minY) * ROOM_SIZE * scaleFactor;
         const size = ROOM_SIZE * scaleFactor;

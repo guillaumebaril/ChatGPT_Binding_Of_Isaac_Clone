@@ -7,7 +7,7 @@ import { Keyboard } from './keyboard.js';
 import { Player } from './player.js';
 import { PlayerRenderer } from './PlayerRenderer.js';
 
-const player = new Player(100, 60, 10, false);
+const player = new Player(100, 120, 10, false);
 const playerRenderer = new PlayerRenderer();
 const mapGenerator = new MapGenerator();
 
